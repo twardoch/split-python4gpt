@@ -2,7 +2,11 @@
 
 `split_python4gpt` is a Python tool designed to reorganize large Python projects into minified files based on a specified token limit. This is particularly useful for processing large Python projects with GPT models, as it allows the models to handle the data in manageable chunks.
 
-_**Version 1.0.0** (2023-06-22)_
+_**Version 1.0.1** (2023-06-22)_
+
+### NOT IMPLEMENTED YET
+
+Warning: The code does not yet implement the splitting or token counting, only type inference and minification. Use at your own risk.
 
 ## Installation
 
@@ -14,6 +18,8 @@ pip install split_python4gpt
 
 ## CLI Usage
 
+### This is not yet implemented!
+
 After installation, you can use the `pysplit4gpt` or `python3.10 -m split_python4gpt` command to split a Python file. Here's the basic syntax:
 
 ```bash
@@ -21,6 +27,10 @@ python3.10 -m split_python4gpt py_path_or_folder --model gpt-3.5-turbo --limit 4
 ```
 
 This command will split the Python file or all Python files in `py_path_or_folder` into sections, each containing no more than 4096 tokens (as counted by the `gpt-3.5-turbo` model). The sections will be separated by `=== SPLIT ===`.
+
+## Python usage
+
+- **[See the API documentation](https://twardoch.github.io/split-python4gpt/API.html)** for more advanced usage
 
 ## Changelog
 

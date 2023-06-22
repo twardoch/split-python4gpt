@@ -2,7 +2,7 @@
 
 `split_python4gpt` is a Python tool designed to reorganize large Python projects into minified files based on a specified token limit. This is particularly useful for processing large Python projects with GPT models, as it allows the models to handle the data in manageable chunks.
 
-_**Version 1.0.2** (2023-06-22)_
+_**Version 1.0.3** (2023-06-22)_
 
 ### NOT IMPLEMENTED YET
 
@@ -18,15 +18,86 @@ pip install split_python4gpt
 
 ## CLI Usage
 
-### This is not yet implemented!
+After installation, you can use the `pysplit4gpt` or `python3.10 -m split_python4gpt` command: 
 
-After installation, you can use the `pysplit4gpt` or `python3.10 -m split_python4gpt` command to split a Python file. Here's the basic syntax:
-
-```bash
-python3.10 -m split_python4gpt py_path_or_folder --model gpt-3.5-turbo --limit 4096 --separator "=== SPLIT ==="
 ```
+python3.10 -m split_python4gpt PATH_OR_FOLDER [FLAGS]
 
-This command will split the Python file or all Python files in `py_path_or_folder` into sections, each containing no more than 4096 tokens (as counted by the `gpt-3.5-turbo` model). The sections will be separated by `=== SPLIT ===`.
+POSITIONAL ARGUMENTS
+    PATH_OR_FOLDER
+        Type: str | pathlib.Path
+        Path to the input Python file or folder.
+
+FLAGS
+    -o, --out=OUT
+        Type: Optional[str | pathlib...
+        Default: None
+        Output folder for the processed files. Defaults to input folder.
+    -p, --pyis=PYIS
+        Type: Optional[str | pathlib...
+        Default: None
+        Directory for storing generated .pyi files. Defaults to the output folder.
+    -t, --types=TYPES
+        Type: bool
+        Default: True
+        Infer types using PyType? Defaults to True.
+    --mini=MINI
+        Type: bool
+        Default: True
+        Minify the Python scripts? Defaults to True.
+    --mini_docs=MINI_DOCS
+        Type: bool
+        Default: True
+        Remove docstrings? Defaults to True.
+    --mini_globs=MINI_GLOBS
+        Type: bool
+        Default: False
+        Rename global names? Defaults to False.
+    --mini_locs=MINI_LOCS
+        Type: bool
+        Default: False
+        Rename local names? Defaults to False.
+    --mini_lits=MINI_LITS
+        Type: bool
+        Default: True
+        Hoist literal statements? Defaults to True.
+    --mini_annotations=MINI_ANNOTATIONS
+        Type: bool
+        Default: True
+        Remove annotations? Defaults to True.
+    --mini_asserts=MINI_ASSERTS
+        Type: bool
+        Default: True
+        Remove asserts? Defaults to True.
+    --mini_debug=MINI_DEBUG
+        Type: bool
+        Default: True
+        Remove debugging statements? Defaults to True.
+    --mini_imports=MINI_IMPORTS
+        Type: bool
+        Default: True
+        Combine imports? Defaults to True.
+    --mini_obj=MINI_OBJ
+        Type: bool
+        Default: True
+        Remove object base? Defaults to True.
+    --mini_pass=MINI_PASS
+        Type: bool
+        Default: True
+        Remove pass statements? Defaults to True.
+    --mini_posargs=MINI_POSARGS
+        Type: bool
+        Default: True
+        Convert positional to keyword args? Defaults to True.
+    --mini_retnone=MINI_RETNONE
+        Type: bool
+        Default: True
+        Remove explicit return None statements? Defaults to True.
+    --mini_shebang=MINI_SHEBANG
+        Type: bool
+        Default: True
+        Remove shebang? Defaults to True.
+```
 
 ## Python usage
 

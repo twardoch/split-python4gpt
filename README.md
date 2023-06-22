@@ -2,7 +2,7 @@
 
 `split_python4gpt` is a Python tool designed to reorganize large Python projects into minified files based on a specified token limit. This is particularly useful for processing large Python projects with GPT models, as it allows the models to handle the data in manageable chunks.
 
-_**Version 1.0.1** (2023-06-22)_
+_**Version 1.0.2** (2023-06-22)_
 
 ### NOT IMPLEMENTED YET
 

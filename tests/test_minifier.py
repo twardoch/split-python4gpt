@@ -1,4 +1,3 @@
-import logging  # Keep for potential local test logging if needed, but config is global
 from pathlib import Path
 
 import pytest

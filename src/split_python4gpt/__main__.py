@@ -3,7 +3,7 @@ from pathlib import Path
 
 import fire
 
-from .minifier import PyTypingMinifier
+from .minifier import PyLLMSplitter
 
 
 def split_python4gpt(
@@ -15,7 +15,7 @@ def split_python4gpt(
     mini_docs: bool = True,
     mini_globs: bool = False,
     mini_locs: bool = False,
-    mini_lits: bool = True,
+    mini_lits: bool = False,
     mini_annotations: bool = True,
     mini_asserts: bool = True,
     mini_debug: bool = True,
@@ -52,7 +52,8 @@ def split_python4gpt(
     Returns:
         list[Path]: List of output Python files.
     """
-    return PyTypingMinifier().process_py(
+    splitter = PyLLMSplitter()
+    splitter.process_py(
         py_path_or_folder=path_or_folder,
         out_py_folder=out,
         pyi_folder=pyis,
@@ -72,6 +73,7 @@ def split_python4gpt(
         rename_globals=mini_globs,
         rename_locals=mini_locs,
     )
+    splitter.write_splits()
 
 
 def cli():

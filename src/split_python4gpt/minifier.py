@@ -3,10 +3,26 @@
 import logging
 import shutil
 import subprocess
+from ast import ClassDef, FunctionDef, NodeTransformer, fix_missing_locations, parse
+from os import environ
 from pathlib import Path
 
+import tiktoken
+from astor import to_source
 from python_minifier import minify
 from pytype.tools.merge_pyi import merge_pyi
+from simpleaichat import AIChat
+
+OPENAI_MODELS = {
+    "gpt-4": 8192,
+    "gpt-4-32k": 32768,
+    "gpt-4-32k-0613": 32768,
+    "gpt-4-0613": 8192,
+    "gpt-3.5-turbo": 4096,
+    "gpt-3.5-turbo-0613": 4096,
+    "gpt-3.5-turbo-16k": 16384,
+    "gpt-3.5-turbo-16k-0613": 16384,
+}
 
 
 class PyTypingMinifier:
@@ -26,6 +42,7 @@ class PyTypingMinifier:
         # It's not strictly needed as an instance variable but harmless.
         self.code_data = {
             "py_path": Path(),
+            "rel_path": Path(),
             "pyi_path": Path(),
             "py_code": "",
         }
@@ -74,84 +91,36 @@ class PyTypingMinifier:
         py_path = Path(py_path).resolve()
         rel_py_path = Path(py_path).relative_to(self.py_folder)
         out_py_path = Path(self.out_py_folder, rel_py_path)
+        rel_out_py_path = Path(out_py_path).relative_to(self.out_py_folder)
         out_py_path.parent.mkdir(parents=True, exist_ok=True)
         if out_py_path != py_path:
             shutil.copy2(py_path, out_py_path)
         pyi_path = Path(
-            self.pyi_folder, ".pytype", "pyi", out_py_path.with_suffix(".pyi").name
+            self.pyi_folder, ".pytype", "pyi", rel_out_py_path.with_suffix(".pyi").name
         )
+        print(f"{pyi_path=}")
         py_code = out_py_path.read_text()
         code_data = {
             "py_path": py_path,
+            "rel_path": rel_py_path,
             "pyi_path": pyi_path,
             "py_code": py_code,
         }
         return out_py_path, code_data
 
-    def infer_types(
-        self, py_path: str | Path, pyi_path: str | Path, py_code: str
-    ) -> str:
-        # print(f"[DEBUG] infer_types: py_path='{py_path}', pyi_path='{pyi_path}'", flush=True) # DEBUG
-        # print(f"[DEBUG] infer_types: PY_TYPE_PY_EXE='{self.PY_TYPE_PY_EXE}'", flush=True) # DEBUG
-        if not self.PY_TYPE_PY_EXE:
-            logging.error("PY_TYPE_PY_EXE is not set. Cannot run pytype.")
-            return py_code
-
-        command = [
-            self.PY_TYPE_PY_EXE,
-            "-m",
-            "pytype",
-            f"--python-version={self.PY_TYPE_PY_VER}",
-            str(py_path),  # This is the out_py_path, where the copied file resides
-        ]
-        try:
-            # Ensure the .pytype/pyi directory exists for pytype to write into
-            # pytype typically creates this, but good to be defensive or if permissions are an issue.
-            # However, pytype is run with cwd=self.pyi_folder, so it will create .pytype/pyi relative to that.
-            # Path(pyi_path).parent.mkdir(parents=True, exist_ok=True) # pyi_path includes .pytype/pyi
-
-            result = subprocess.run(
-                command,
-                cwd=self.pyi_folder,  # pytype will output to .pytype/pyi within this cwd
-                check=True,
-                capture_output=True,  # Capture stdout/stderr
-                text=True,
-            )
-            logging.info(f"Pytype stdout for {py_path}:\n{result.stdout}")
-            logging.info(f"Pytype stderr for {py_path}:\n{result.stderr}")
-
-            # If pytype succeeds, the .pyi file should exist at the location pytype creates it.
-            # Our pyi_path variable is constructed to match this expected location.
-            if Path(pyi_path).exists():
-                pyi_code = Path(pyi_path).read_text()
-                if pyi_code.strip():  # Check if pyi file is not empty
-                    py_code = merge_pyi.merge_sources(py=py_code, pyi=pyi_code)
-                else:
-                    logging.info(
-                        f"Pytype generated an empty .pyi file for {py_path} at {pyi_path}. No types merged."
-                    )
-            else:
-                logging.warning(
-                    f"Pytype ran for {py_path} (stdout above), but output .pyi file {pyi_path} not found. Skipping type merging."
-                )
-        except subprocess.CalledProcessError as e:
-            logging.warning(
-                f"Pytype failed for {py_path}. Exit code: {e.returncode}. Stderr: {e.stderr}. Stdout: {e.stdout}. Skipping type merging."
-            )
-        except FileNotFoundError as e:
-            # This could happen if PY_TYPE_PY_EXE is not found, or if pyi_path.read_text() fails
-            # after a successful pytype run but the file is somehow missing.
-            logging.error(
-                f"File not found during type inference for {py_path}. Error: {e}. "
-                f"Ensure Pytype executable '{self.PY_TYPE_PY_EXE}' is correct and accessible, "
-                f"or check pyi file path: {pyi_path}. Skipping type merging."
-            )
-        except Exception as e:
-            # Catch any other unexpected errors during type inference.
-            logging.error(
-                f"An unexpected error occurred during type inference for {py_path}. Type: {type(e).__name__}, Error: {e}. "
-                "Skipping type merging."
-            )
+    def infer_types(self, py_path: Path, pyi_path: Path, py_code: str) -> str:
+        with contextlib.suppress(subprocess.CalledProcessError):
+            command = [
+                self.PY_TYPE_PY_EXE,
+                "-m",
+                "pytype",
+                f"--python-version={self.PY_TYPE_PY_VER}",
+                str(py_path.relative_to(self.pyi_folder)),
+            ]
+            print(f"{self.pyi_folder=} {py_path=}")
+            subprocess.run(command, cwd=self.pyi_folder, check=True)
+            pyi_code = Path(pyi_path).read_text()
+            py_code = merge_pyi.merge_sources(py=py_code, pyi=pyi_code)
         return py_code
 
     def minify(self, py_code: str, **custom_minify_options):
@@ -188,31 +157,132 @@ class PyTypingMinifier:
             self.read_py_file(py_path_or_folder, out_py_folder, pyi_folder)
         else:
             return []
-
-        processed_file_paths = []
-        for out_py_path, file_data in self.code_folder_data.items():
-            # Start with the current code for this file
-            current_processed_code = file_data["py_code"]
-
+        for out_py_path, code_data in self.code_folder_data.items():
+            py_code = code_data["py_code"]
             if types:
-                current_processed_code = self.infer_types(
-                    out_py_path, file_data["pyi_path"], current_processed_code
-                )
-
+                py_code = self.infer_types(out_py_path, code_data["pyi_path"], py_code)
             if mini:
-                try:
-                    current_processed_code = self.minify(
-                        current_processed_code, **minify_options
-                    )
-                except Exception as e:
-                    logging.error(
-                        f"Minification failed for {out_py_path}. Error: {type(e).__name__}: {e}. Skipping minification for this file."
-                    )
-                    # current_processed_code remains what it was after type inference (or original if types=False)
+                py_code = self.minify(py_code, **minify_options)
+            code_data["py_code"] = py_code
+            out_py_path.write_text(py_code)
+        return list(self.code_folder_data.keys())
 
-            # Update the stored code in code_folder_data and write to the output file
-            file_data["py_code"] = current_processed_code
-            out_py_path.write_text(current_processed_code)
-            processed_file_paths.append(out_py_path)
 
-        return processed_file_paths
+class PyBodySummarizer(NodeTransformer):
+    def __init__(self, py_llm_splitter):
+        self.py_llm_splitter = py_llm_splitter
+
+    def visit_FunctionDef(self, node, code=None):
+        node.body = []
+        if code:
+            with contextlib.suppress(Exception):
+                doc = self.py_llm_splitter.llm_summarize(
+                    self.py_llm_splitter.minify(code, remove_literal_statements=False)
+                )
+                node.body.append(parse(f'"""{doc}"""').body[0])
+        node.body.append(parse("...").body[0])
+        return node
+
+    def visit_ClassDef(self, node):
+        for i, body_node in enumerate(node.body):
+            if isinstance(body_node, FunctionDef):
+                code = to_source(body_node)
+                minified_code = self.py_llm_splitter.minify(
+                    code, remove_literal_statements=False
+                )  # use methods from PyLLMSplitter instance
+                size = self.py_llm_splitter.gptok_size(
+                    minified_code
+                )  # use methods from PyLLMSplitter instance
+                if size > self.py_llm_splitter.gptok_threshold:
+                    # replace function body with "..."
+                    node.body[i] = self.visit_FunctionDef(body_node, minified_code)
+        return node
+
+
+class PyLLMSplitter(PyTypingMinifier):
+    def __init__(
+        self,
+        *args,
+        gptok_model="gpt-3.5-turbo",
+        gptok_limit=None,
+        gptok_threshold=128,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.gptok_model = gptok_model
+        self.gptoker = tiktoken.encoding_for_model(gptok_model)
+        self.gptok_limit = gptok_limit or OPENAI_MODELS.get(gptok_model, 2048)
+        self.gptok_threshold = gptok_threshold
+        self.code_summary = {}
+        self.llm_summarize = AIChat(
+            api_key=environ.get("OPENAI_API_KEY"),
+            system="""Write an extremely short, compact description of this Python code, starting with "This class" or "This method" or "This function" """,
+            model=self.gptok_model,
+        )
+
+    # @lru_cache(maxsize=None)
+    def gptok_size(self, text: str) -> int:
+        return len(list(self.gptoker.encode(text)))
+
+    def process_py_code(self, py_code):
+        tree = parse(py_code)
+        sections = []
+        body_summary = PyBodySummarizer(self)  # pass in the instance of PyLLMSplitter
+        for node in tree.body:
+            code = to_source(node)
+            minified_code = self.minify(code, remove_literal_statements=False)
+            size = self.gptok_size(minified_code)
+
+            if size > self.gptok_threshold and isinstance(
+                node, (FunctionDef, ClassDef)
+            ):
+                # use body_summary instance to transform the node
+                node = body_summary.visit(node)
+                fix_missing_locations(node)
+                minified_code = self.minify(
+                    to_source(node), remove_literal_statements=False
+                )
+                size = self.gptok_size(minified_code)
+
+            sections.append({"py": minified_code, "gptok_size": size})
+
+        return sections
+
+    def process_py(self, *args, **kwargs):
+        paths = super().process_py(*args, **kwargs)
+
+        for path in paths:
+            code_data = self.code_folder_data[path]
+            sections = self.process_py_code(code_data["py_code"])
+            code_data["sections"] = sections
+            code_data["gptok_size"] = sum(sec["gptok_size"] for sec in sections)
+
+            self.code_summary[str(path)] = code_data
+
+        return paths
+
+    def write_splits(self):
+        splits_folder = self.out_py_folder / "split4gpt"
+        splits_folder.mkdir(parents=True, exist_ok=True)
+
+        textportions = []
+        current_size = 0
+        current_portion = []
+
+        for path, code_data in self.code_summary.items():
+            current_portion.append(f"# File: {path}\n")
+            current_size += self.gptok_size(f"# File: {path}\n")
+
+            for section in code_data["sections"]:
+                if current_size + section["gptok_size"] > self.gptok_limit:
+                    textportions.append("".join(current_portion))
+                    current_portion = []
+                    current_size = 0
+
+                current_portion.append(section["py"])
+                current_size += section["gptok_size"]
+
+        if current_portion:
+            textportions.append("".join(current_portion))
+        for i, textportion in enumerate(textportions, start=1):
+            print(textportion, file=open(splits_folder / f"split{i}.py", "w"))

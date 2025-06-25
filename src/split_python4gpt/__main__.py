@@ -2,6 +2,7 @@
 from pathlib import Path
 
 import fire
+
 from .minifier import PyTypingMinifier
 
 

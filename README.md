@@ -1,27 +1,36 @@
 # split_python4gpt
 
-`split_python4gpt` is a Python tool designed to reorganize large Python projects into minified files based on a specified token limit. This is particularly useful for processing large Python projects with GPT models, as it allows the models to handle the data in manageable chunks.
+`split_python4gpt` is a Python tool to minify Python code and optionally infer type hints using Pytype.
+Its original goal is to help prepare large Python projects for analysis by Large Language Models by eventually splitting them based on token limits.
 
-_**Version 1.0.3** (2023-06-22)_
+**Development Version**
 
-### NOT IMPLEMENTED YET
+### Core Functionality Notice
 
-Warning: The code does not yet implement the splitting or token counting, only type inference and minification. Use at your own risk.
+Warning: The core features of **splitting code by token limits and token counting are not yet implemented.**
+The tool currently provides functionality for Python code minification and type inference (via Pytype). Use at your own risk.
 
 ## Installation
 
-You can install `split_python4gpt` via pip:
+You can install `split_python4gpt` via pip (once published) or directly from source for development:
 
+```bash
+# For development
+pip install -e .
+```
+To install the latest release from PyPI (Note: ensure a release matching this README's state is available):
 ```bash
 pip install split_python4gpt
 ```
 
 ## CLI Usage
 
-After installation, you can use the `pysplit4gpt` or `python3.10 -m split_python4gpt` command: 
+After installation, you can use the `mdsplit4gpt` command (or `python -m split_python4gpt`):
 
 ```
-python3.10 -m split_python4gpt PATH_OR_FOLDER [FLAGS]
+mdsplit4gpt PATH_OR_FOLDER [FLAGS]
+# or
+python -m split_python4gpt PATH_OR_FOLDER [FLAGS]
 
 POSITIONAL ARGUMENTS
     PATH_OR_FOLDER
@@ -101,11 +110,11 @@ FLAGS
 
 ## Python usage
 
-- **[See the API documentation](https://twardoch.github.io/split-python4gpt/API.html)** for more advanced usage
+- **[See the API documentation](https://twardoch.github.io/split-python4gpt/API.html)** for more advanced usage (Note: Link might be for a future or different version).
 
 ## Changelog
 
-- v1.0.0: Initial release
+See [CHANGELOG.md](./CHANGELOG.md).
 
 ## Contributing
 
@@ -116,4 +125,3 @@ Contributions to `split_python4gpt` are welcome! Please open an issue or submit 
 - Copyright (c) 2023 [Adam Twardoch](./AUTHORS.md)
 - Written with assistance from ChatGPT
 - Licensed under the [Apache License 2.0](./LICENSE.txt)<a id="split_python4gpt"></a>
-

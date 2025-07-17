@@ -59,7 +59,19 @@ It's a command-line and programmatic tool that takes a Python file or an entire 
 *   An OpenAI API Key (if you intend to use the code summarization feature). Set it as an environment variable: `export OPENAI_API_KEY="your_api_key_here"`.
 *   `pytype` is used for type inference. While listed as a dependency, ensure it's correctly installed and accessible in your environment, especially if using virtual environments or specific Python versions. `split-python4gpt` looks for a Python executable matching the version it's configured for (default 3.10, e.g., `python3.10`).
 
-**Installation Steps:**
+### Quick Installation (Recommended)
+
+Use our installation script for the easiest setup:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/twardoch/split-python4gpt/main/scripts/install.sh | bash
+```
+
+This script will automatically detect your system and choose the best installation method (pip or binary).
+
+### Manual Installation Options
+
+#### Option 1: Install from PyPI (Python Package)
 
 1.  It is recommended to install the tool in a virtual environment:
     ```bash
@@ -71,6 +83,35 @@ It's a command-line and programmatic tool that takes a Python file or an entire 
     pip install split-python4gpt
     ```
     This will also install its dependencies: `fire`, `tiktoken`, `python-minifier`, `pytype`, and `simpleaichat`.
+
+#### Option 2: Download Pre-built Binary
+
+Download the latest binary for your platform from the [releases page](https://github.com/twardoch/split-python4gpt/releases):
+
+- **Linux**: `mdsplit4gpt-linux-x86_64`
+- **macOS**: `mdsplit4gpt-macos-x86_64`
+- **Windows**: `mdsplit4gpt-windows-x86_64.exe`
+
+Make the binary executable and move it to a directory in your PATH:
+
+```bash
+# Linux/macOS
+chmod +x mdsplit4gpt-linux-x86_64
+mv mdsplit4gpt-linux-x86_64 ~/.local/bin/mdsplit4gpt
+
+# Windows
+# Simply run the .exe file or add it to your PATH
+```
+
+#### Option 3: Install from Source
+
+For developers or if you want the latest features:
+
+```bash
+git clone https://github.com/twardoch/split-python4gpt.git
+cd split-python4gpt
+./scripts/install-dev.sh
+```
 
 ## Usage
 
@@ -243,39 +284,81 @@ The tool operates in several stages:
 
 Contributions are welcome! Please follow these guidelines:
 
+### Development Setup
+
 1.  **Fork the repository** on GitHub.
 2.  **Create a new branch** for your feature or bug fix: `git checkout -b feature/your-feature-name` or `git checkout -b fix/your-bug-fix`.
 3.  **Set up the development environment:**
-    *   It's recommended to use a virtual environment with Python 3.10.
-    *   Install dependencies, including testing tools:
-        ```bash
-        pip install -e .[testing]
-        ```
-    *   This project uses `pre-commit` for code quality checks. Install and set up the hooks:
-        ```bash
-        pip install pre-commit
-        pre-commit install
-        ```
-        Before committing, `pre-commit` will run tools like `black`, `isort`, and `flake8`.
-4.  **Make your changes.**
-5.  **Adhere to coding standards:**
-    *   Code is formatted with `black`.
-    *   Imports are sorted with `isort`.
-    *   Follow PEP 8 guidelines.
-    *   `flake8` is used for linting with the following configurations (see `setup.cfg`):
-        *   `max_line_length = 88`
-        *   `extend_ignore = E203, W503` (E203: whitespace before ':', often conflicts with black; W503: line break before binary operator, also a black preference).
-6.  **Add tests** for your changes in the `tests/` directory.
-7.  **Run tests** using `tox` (which also checks coverage) or `pytest`:
     ```bash
-    tox
-    # OR
-    pytest
+    ./scripts/install-dev.sh
     ```
-    Ensure all tests pass.
+    This script will:
+    - Create a virtual environment with Python 3.10
+    - Install the package in development mode
+    - Install all testing and development dependencies
+    - Set up pre-commit hooks
+
+### Development Workflow
+
+4.  **Make your changes.**
+5.  **Run tests and checks:**
+    ```bash
+    # Run all tests
+    ./scripts/build-and-test.sh
+    
+    # Run with coverage
+    ./scripts/build-and-test.sh --with-coverage
+    
+    # Run performance tests
+    ./scripts/build-and-test.sh --with-performance
+    
+    # Run individual test categories
+    pytest -v                    # All tests
+    pytest -v -m performance     # Performance tests only
+    pytest -v tests/test_cli.py  # CLI tests only
+    ```
+
+6.  **Code quality standards:**
+    - Code is formatted with `black`
+    - Imports are sorted with `isort`
+    - Follow PEP 8 guidelines
+    - `flake8` is used for linting
+    - `pre-commit` hooks run automatically before commits
+
+7.  **Add tests** for your changes in the `tests/` directory.
 8.  **Commit your changes** with a clear and descriptive commit message.
 9.  **Push your branch** to your fork: `git push origin feature/your-feature-name`.
 10. **Create a Pull Request (PR)** against the `main` branch of the original repository.
+
+### Release Process
+
+This project uses git-tag-based semantic versioning with automated releases:
+
+1. **For maintainers creating releases:**
+   ```bash
+   ./scripts/release.sh 1.2.3
+   ```
+   This script will:
+   - Validate the version format
+   - Run comprehensive tests
+   - Update the changelog
+   - Create and push a git tag
+   - Trigger GitHub Actions for automated release
+
+2. **Automated CI/CD:**
+   - **On every push/PR:** Tests run on Linux, macOS, and Windows
+   - **On git tags:** Full release pipeline creates:
+     - PyPI package publication
+     - Multi-platform binary builds
+     - GitHub release with assets
+     - Automated changelog generation
+
+3. **Available scripts:**
+   - `./scripts/install-dev.sh` - Development environment setup
+   - `./scripts/build-and-test.sh` - Comprehensive testing
+   - `./scripts/release.sh <version>` - Create a new release
+   - `./scripts/get_version.py` - Get current version
+   - `./scripts/validate_tag.py <version>` - Validate version format
 
 ## License
 

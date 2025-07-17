@@ -6,4 +6,7 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools_scm]
 # For smarter version schemes and other configuration options,
 # check out https://github.com/pypa/setuptools_scm
-version_scheme = "no-guess-dev"
+version_scheme = "release-branch-semver"
+local_scheme = "no-local-version"
+tag_regex = "^v?(?P<version>[0-9]+\\.[0-9]+\\.[0-9]+)(?P<pre_release>[-\\.a-zA-Z0-9]+)?$"
+fallback_version = "0.0.0"

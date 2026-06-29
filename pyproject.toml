@@ -1,12 +1,114 @@
 [build-system]
-# AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
-requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
-[tool.setuptools_scm]
-# For smarter version schemes and other configuration options,
-# check out https://github.com/pypa/setuptools_scm
-version_scheme = "release-branch-semver"
-local_scheme = "no-local-version"
-tag_regex = "^v?(?P<version>[0-9]+\\.[0-9]+\\.[0-9]+)(?P<pre_release>[-\\.a-zA-Z0-9]+)?$"
-fallback_version = "0.0.0"
+[project]
+name = "split-python4gpt"
+dynamic = ["version"]
+description = "Reorganise large Python projects into minified, token-bounded files for LLM consumption."
+readme = "README.md"
+license = {text = "Apache-2.0"}
+authors = [{name = "Adam Twardoch", email = "adam+github@twardoch.com"}]
+keywords = [
+    "python", "code-summarization", "openai", "text-summarization",
+    "gpt", "data-preprocessing", "openai-gpt", "gpt-4",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Text Processing",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "fire>=0.5.0",
+    "python-minifier>=2.9.0",
+]
+
+[project.optional-dependencies]
+types = ["pytype>=2023.6.16"]
+llm = [
+    "tiktoken>=0.4.0",
+    "simpleaichat>=0.2.0",
+]
+testing = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "psutil>=5.9",
+]
+dev = [
+    "split-python4gpt[testing]",
+    "ruff>=0.4",
+    "mypy>=1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/twardoch/split-python4gpt"
+Documentation = "https://twardoch.github.io/split-python4gpt/"
+Source = "https://github.com/twardoch/split-python4gpt"
+Changelog = "https://github.com/twardoch/split-python4gpt/blob/main/CHANGELOG.md"
+
+[project.scripts]
+mdsplit4gpt = "split_python4gpt.__main__:cli"
+
+# ---------------------------------------------------------------------------
+# Hatch
+# ---------------------------------------------------------------------------
+
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "0.0.0"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/split_python4gpt/_version.py"
+
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/tests", "README.md", "CHANGELOG.md", "LICENSE.txt"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/split_python4gpt"]
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+addopts = ["--verbose"]
+testpaths = ["tests"]
+norecursedirs = ["dist", "build", ".tox"]
+markers = [
+    "performance: marks tests as performance tests (deselect with '-m \"not performance\"')",
+]
+
+# ---------------------------------------------------------------------------
+# Ruff
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "W"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["split_python4gpt"]
+
+# ---------------------------------------------------------------------------
+# Mypy
+# ---------------------------------------------------------------------------
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

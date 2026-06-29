@@ -31,14 +31,14 @@ def split_python4gpt(path_or_folder: str | Path,
                      mini_shebang: bool = True)
 ```
 
-Minify Python scripts or projects and/or infer types in them.
+Minify Python scripts or projects and/or infer types.
 
 Args:
-    path_or_folder (str | Path): Path to the input Python file or folder.
-    out (str | Path | None, optional): Output folder for the processed files. Defaults to input folder.
-    pyis (str | Path | None, optional): Directory for storing generated .pyi files. Defaults to the output folder.
+    path_or_folder (str | Path): Input Python file or folder path.
+    out (str | Path | None, optional): Output folder for processed files. Defaults to input folder.
+    pyis (str | Path | None, optional): Directory for generated .pyi files. Defaults to output folder.
     types (bool, optional): Infer types using PyType? Defaults to True.
-    mini (bool, optional): Minify the Python scripts? Defaults to True.
+    mini (bool, optional): Minify scripts? Defaults to True.
     mini_docs (bool, optional): Remove docstrings? Defaults to True.
     mini_globs (bool, optional): Rename global names? Defaults to False.
     mini_locs (bool, optional): Rename local names? Defaults to False.
@@ -54,8 +54,4 @@ Args:
     mini_shebang (bool, optional): Remove shebang? Defaults to True.
 
 Returns:
-    list[Path]: List of output Python files.
-
-<a id="split_python4gpt.minifier"></a>
-
-# split\_python4gpt.minifier
+    list[Path]: Processed Python files.

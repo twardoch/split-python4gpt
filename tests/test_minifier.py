@@ -270,9 +270,6 @@ def test_process_folder_identity(minifier, tmp_path):
         assert processed_code == expected_code, f"Mismatch in {rel_path_str}"
 
 
-@pytest.mark.xfail(
-    reason="Type inference merging is currently not working as expected. This test checks combined type inference and minification."
-)
 def test_process_folder_types_and_minify(minifier, tmp_path):
     data_dir = Path(__file__).parent / "data"
     in_folder = data_dir / "folder_in"

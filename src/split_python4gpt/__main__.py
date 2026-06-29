@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# this_file: src/split_python4gpt/__main__.py
+"""CLI entry point for split-python4gpt (``mdsplit4gpt`` command)."""
+
+from __future__ import annotations
+
 from pathlib import Path
 
 import fire
@@ -76,9 +81,12 @@ def split_python4gpt(
     splitter.write_splits()
 
 
-def cli():
-    fire.core.Display = lambda lines, out: print(*lines, file=out)
-    fire.Fire(split_python4gpt)
+def cli() -> None:
+    """Run the CLI using python-fire."""
+    import sys
+
+    fire.core.Display = lambda lines, out: print(*lines, file=sys.stdout)
+    fire.Fire(split_python4gpt, name="mdsplit4gpt")
 
 
 if __name__ == "__main__":

@@ -1,20 +1,15 @@
-import sys
+# this_file: src/split_python4gpt/__init__.py
+"""split-python4gpt — minify and split Python projects for LLM consumption."""
+
+from __future__ import annotations
+
+from importlib.metadata import PackageNotFoundError, version
 
 from .minifier import PyTypingMinifier
 
-__all__ = ["PyTypingMinifier"]
-
-if sys.version_info[:2] >= (3, 8):
-    # TODO: Import directly (no need for conditional) when `python_requires = >= 3.8`
-    from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
-else:
-    from importlib_metadata import PackageNotFoundError, version  # pragma: no cover
+__all__ = ["PyTypingMinifier", "__version__"]
 
 try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = __name__
-    __version__ = version(dist_name)
+    __version__: str = version("split-python4gpt")
 except PackageNotFoundError:  # pragma: no cover
-    __version__ = "unknown"
-finally:
-    del version, PackageNotFoundError
+    __version__ = "0.0.0"

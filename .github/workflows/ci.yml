@@ -56,24 +56,3 @@ jobs:
       - name: Ruff format check
         run: ruff format --check src/ tests/
 
-  publish:
-    name: Publish to PyPI
-    needs: test
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    environment: release
-    permissions:
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-      - name: Install Hatch
-        run: pip install hatch
-      - name: Build
-        run: hatch build
-      - name: Publish
-        uses: pypa/gh-action-pypi-publish@release/v1

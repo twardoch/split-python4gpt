@@ -1,8 +1,5 @@
-from pathlib import Path
 import logging
-import subprocess
-import sys
-import tempfile
+from pathlib import Path
 
 import pytest
 
@@ -20,7 +17,7 @@ def test_minify_code(minifier):
     expected_out_file = Path(__file__).parent / "data" / "out_test.py"
 
     in_code = in_file.read_text()
-    expected_out_code = expected_out_file.read_text().strip() # Strip trailing newline
+    expected_out_code = expected_out_file.read_text().strip()  # Strip trailing newline
 
     minified_code = minifier.minify(in_code)
     assert minified_code == expected_out_code
@@ -64,18 +61,6 @@ def test_type_inference(minifier, tmp_path):
     # We will need to run pytype on type_in.py to get the precise expected output.
     # For now, let's assume pytype adds 'Any' if it can't resolve or if not enough info.
     # A more realistic expectation will be set after manual pytype run.
-    expected_typed_code = """from typing import Any
-
-def greet(name: Any) -> str:
-    return "Hello, " + name
-
-def add(x: Any, y: Any) -> Any:
-    return x + y
-
-a: str = greet("world")
-b: Any = add(1, 2)
-c: Any = add("foo", "bar")
-"""
     # For now, let's just check if some type hints are present
     # This will be replaced by a direct string comparison once expected_typed_code is finalized.
     assert "def greet(name: " in processed_code
@@ -109,7 +94,9 @@ c: Any = add("foo", "bar")
 def test_process_single_file_minify_only(minifier, tmp_path):
     data_dir = Path(__file__).parent / "data"
     in_file = data_dir / "in_test.py"  # Use the existing simple file for minification
-    expected_out_code = (data_dir / "out_test.py").read_text().strip() # Strip trailing newline
+    expected_out_code = (
+        (data_dir / "out_test.py").read_text().strip()
+    )  # Strip trailing newline
 
     test_out_dir = tmp_path / "test__process_single_file_output"
     test_out_dir.mkdir()
@@ -312,9 +299,9 @@ def test_process_folder_types_and_minify(minifier, tmp_path):
         # This assertion will pass if minification works, even if type inference doesn't add hints.
         # If type inference WERE working, `processed_code` would be different, and this test would then fail
         # until `expected_codes_minified_only` is updated to reflect minified+typed code.
-        assert (
-            processed_code == expected_code
-        ), f"Mismatch in {rel_path_str} (checking minified output, types might be missing)"
+        assert processed_code == expected_code, (
+            f"Mismatch in {rel_path_str} (checking minified output, types might be missing)"
+        )
 
     # TODO: Add a stronger assertion here if/when type inference works:
     # e.g. for file1.py, check for "def func1(a: Any, b: Any)" in processed_code

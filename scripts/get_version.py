@@ -13,7 +13,7 @@ sys.path.insert(0, str(repo_root / "src"))
 
 try:
     from setuptools_scm import get_version
-    
+
     def get_current_version():
         """Get the current version from git tags."""
         try:
@@ -22,10 +22,10 @@ try:
         except Exception as e:
             print(f"Error getting version: {e}", file=sys.stderr)
             return "0.0.0"
-    
+
     if __name__ == "__main__":
         print(get_current_version())
-        
+
 except ImportError:
     print("setuptools_scm not available, using fallback version", file=sys.stderr)
     print("0.0.0")

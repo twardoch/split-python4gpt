@@ -9,10 +9,9 @@ import logging
 import shutil
 import subprocess
 from ast import ClassDef, FunctionDef, NodeTransformer, fix_missing_locations, parse
+from ast import unparse as ast_unparse
 from os import environ
 from pathlib import Path
-
-from ast import unparse as ast_unparse
 
 from python_minifier import minify
 
@@ -189,7 +188,9 @@ class PyTypingMinifier:
                 f"--python-version={self.PY_TYPE_PY_VER}",
                 str(py_path.relative_to(self.pyi_folder)),  # type: ignore[arg-type]
             ]
-            subprocess.run(command, cwd=self.pyi_folder, check=True, capture_output=True)
+            subprocess.run(
+                command, cwd=self.pyi_folder, check=True, capture_output=True
+            )
             pyi_code = pyi_path.read_text(encoding="utf-8")
             py_code = merge_pyi.merge_sources(py=py_code, pyi=pyi_code)
         except Exception as exc:
@@ -298,7 +299,9 @@ class PyBodySummarizer(NodeTransformer):
     def __init__(self, py_llm_splitter: PyLLMSplitter) -> None:
         self.py_llm_splitter = py_llm_splitter
 
-    def visit_FunctionDef(self, node: FunctionDef, code: str | None = None) -> FunctionDef:  # type: ignore[override]
+    def visit_FunctionDef(
+        self, node: FunctionDef, code: str | None = None
+    ) -> FunctionDef:  # type: ignore[override]
         """Replace *node*'s body with ``...`` (and an AI summary if *code* given).
 
         Args:
@@ -393,9 +396,7 @@ class PyLLMSplitter(PyTypingMinifier):
                 model=self.gptok_model,
             )
         except Exception as exc:
-            logger.warning(
-                "AIChat unavailable (%s); LLM summarisation disabled.", exc
-            )
+            logger.warning("AIChat unavailable (%s); LLM summarisation disabled.", exc)
 
     def gptok_size(self, text: str) -> int:
         """Count GPT tokens in *text* using the model's tokeniser.
@@ -435,7 +436,9 @@ class PyLLMSplitter(PyTypingMinifier):
             minified_code = self.minify(code, remove_literal_statements=False)
             size = self.gptok_size(minified_code)
 
-            if size > self.gptok_threshold and isinstance(node, (FunctionDef, ClassDef)):
+            if size > self.gptok_threshold and isinstance(
+                node, (FunctionDef, ClassDef)
+            ):
                 node = body_summary.visit(node)
                 fix_missing_locations(node)
                 minified_code = self.minify(
@@ -476,7 +479,9 @@ class PyLLMSplitter(PyTypingMinifier):
         processed).
         """
         if self.out_py_folder is None:
-            logger.warning("write_splits called before process_py; no output folder set.")
+            logger.warning(
+                "write_splits called before process_py; no output folder set."
+            )
             return
         splits_folder = self.out_py_folder / "split4gpt"
         splits_folder.mkdir(parents=True, exist_ok=True)

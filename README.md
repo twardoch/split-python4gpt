@@ -164,9 +164,7 @@ from split_python4gpt import PyLLMSplitter
 # os.environ["OPENAI_API_KEY"] = "your_api_key"
 
 splitter = PyLLMSplitter(
-    gptok_model="gpt-3.5-turbo",
-    gptok_limit=4000,
-    gptok_threshold=200
+    gptok_model="gpt-3.5-turbo", gptok_limit=4000, gptok_threshold=200
 )
 
 input_path = "path/to/your/python_project_or_file"
@@ -180,7 +178,7 @@ processed_file_paths = splitter.process_py(
     types=True,
     mini=True,
     remove_literal_statements=True,
-    rename_globals=False
+    rename_globals=False,
 )
 
 splitter.write_splits()
